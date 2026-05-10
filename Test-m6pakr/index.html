@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ORYVN</title>
+  <style>
+    :root {
+      --bg: #1a1a1a;
+      --surface: #222222;
+      --surface2: #2a2a2a;
+      --border: #333333;
+      --text: #c8c8c8;
+      --text-muted: #666666;
+      --text-dim: #888888;
+      --accent: #c8a96e;
+      --accent-dim: rgba(200, 169, 110, 0.15);
+      --btn-primary-bg: #c8a96e;
+      --btn-primary-text: #1a1a1a;
+      --btn-secondary-bg: #2a2a2a;
+      --btn-secondary-text: #888888;
+      --btn-secondary-border: #333333;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text-dim);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+      font-size: 11px;
+      line-height: 1.5;
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-font-smoothing: antialiased;
+    }
+    #app {
+      width: 100%;
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+      color: var(--text-dim);
+      position: relative;
+      overflow: visible;
+    }
+    .hidden { display: none !important; }
+
+    #setup-view {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 20px;
+      background: var(--bg);
+      color: var(--text-dim);
+      position: relative;
+      z-index: 0;
+      overflow: visible;
+    }
+    .setup-inner {
+      width: 100%;
+      max-width: 260px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: relative;
+      overflow: visible;
+      z-index: 0;
+    }
+    .setup-brand {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--accent);
+      text-align: center;
+    }
+    .setup-copy {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: center;
+      line-height: 1.6;
+    }
+    .setup-label {
+      font-size: 9px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .uxp-field-wrap {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+    }
+    #setup-email, #setup-password {
+      width: 100%;
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 8px 10px;
+      font-size: 11px;
+      font-family: inherit;
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    #setup-email::placeholder, #setup-password::placeholder { color: var(--text-muted); opacity: 0.7; }
+    #setup-email:focus, #setup-password:focus { border-color: var(--accent); }
+    .setup-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    #sign-in-btn, #register-btn {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    #sign-in-btn {
+      background: var(--btn-primary-bg);
+      color: var(--btn-primary-text);
+      border: none;
+      font-weight: 600;
+    }
+    #sign-in-btn:hover { filter: brightness(1.08); }
+    #register-btn {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      font-weight: 500;
+    }
+    #register-btn:hover {
+      border-color: var(--accent);
+      color: var(--text-dim);
+    }
+    #setup-error {
+      font-size: 10px;
+      color: #a67c5a;
+      text-align: center;
+      min-height: 14px;
+    }
+
+    #main-view {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      background: var(--bg);
+      position: relative;
+      overflow: hidden;
+    }
+    .header-bar {
+      flex-shrink: 0;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px 10px 14px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .header-brand {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .header-credits-wrap {
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+    #header-credits-num {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    #header-filename {
+      font-size: 10px;
+      color: var(--text-muted);
+      max-width: 72px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    #menu-btn {
+      flex-shrink: 0;
+      width: 28px;
+      height: 24px;
+      padding: 0;
+      font-size: 14px;
+      line-height: 1;
+      color: var(--text-muted);
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    #menu-btn:hover { border-color: var(--accent); color: var(--text); }
+    #header-menu-dropdown {
+      position: absolute;
+      top: 100%;
+      right: 10px;
+      margin-top: 4px;
+      min-width: 140px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+      z-index: 50;
+      padding: 4px 0;
+    }
+    #header-menu-dropdown button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 8px 12px;
+      font-size: 10px;
+      color: var(--text-dim);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+    }
+    #header-menu-dropdown button:hover {
+      background: var(--accent-dim);
+      color: var(--text);
+    }
+
+    #chat-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 0;
+      min-height: 0;
+      background: var(--bg);
+    }
+    #chat-area::-webkit-scrollbar { width: 2px; }
+    #chat-area::-webkit-scrollbar-track { background: var(--bg); }
+    #chat-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 1px; }
+
+    .exchange-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 10px 15px 12px;
+    }
+
+    .msg-row { margin-bottom: 10px; }
+    .msg-row:last-child { margin-bottom: 0; }
+
+    .msg-sable-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      max-width: 100%;
+      padding: 0 14px;
+    }
+    .msg-sable-label {
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    .msg-sable-bubble {
+      max-width: 220px;
+      font-size: 11px;
+      color: var(--text-dim);
+      line-height: 1.65;
+      word-wrap: break-word;
+    }
+
+    .msg-user-wrap {
+      display: flex;
+      justify-content: flex-end;
+      padding: 0 14px;
+    }
+    .msg-user-text {
+      max-width: 210px;
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.65;
+      text-align: right;
+      word-wrap: break-word;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+      max-width: 220px;
+    }
+    .chip {
+      font-size: 9px;
+      letter-spacing: 0.04em;
+      padding: 4px 8px;
+      border-radius: 3px;
+      border: 1px solid;
+    }
+    .chip--skin {
+      background: rgba(200, 169, 110, 0.15);
+      color: var(--accent);
+      border-color: rgba(200, 169, 110, 0.35);
+    }
+    .chip--grade {
+      background: rgba(200, 169, 110, 0.1);
+      color: var(--text-dim);
+      border-color: rgba(200, 169, 110, 0.28);
+    }
+
+    .stats-block {
+      margin-top: 10px;
+      max-width: 220px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .stat-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+    .stat-name {
+      flex: 0 0 72px;
+      color: var(--text-muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .stat-bar-track {
+      flex: 1;
+      height: 4px;
+      background: var(--surface2);
+      border-radius: 1px;
+      overflow: hidden;
+    }
+    .stat-bar-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 1px;
+    }
+    .stat-val {
+      flex: 0 0 28px;
+      text-align: right;
+      color: var(--text-dim);
+    }
+
+    .btn-inline-buy {
+      margin-top: 10px;
+      padding: 8px 14px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--btn-primary-text);
+      background: var(--btn-primary-bg);
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .btn-inline-buy:hover { filter: brightness(1.08); }
+
+    .buy-credits-block {
+      margin: 12px 14px 20px;
+      padding: 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+    }
+    .buy-credits-title {
+      font-size: 9px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+    .buy-credits-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .pack-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+      text-align: left;
+      color: var(--text-dim);
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+    }
+    .pack-card:hover { border-color: var(--accent); }
+    .pack-card strong { display: block; font-size: 11px; color: var(--text); }
+    .pack-card span { font-size: 9px; color: var(--text-muted); }
+    .buy-credits-close {
+      margin-top: 10px;
+      width: 100%;
+      padding: 6px;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .input-area {
+      flex-shrink: 0;
+      border-top: 1px solid var(--border);
+      padding: 10px 12px 14px;
+      background: var(--surface);
+      position: relative;
+      z-index: 1;
+    }
+    .input-shell {
+      position: relative;
+      z-index: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 9px 10px 9px 12px;
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      transition: border-color 0.15s ease;
+    }
+    .input-shell:focus-within {
+      border-color: var(--accent);
+    }
+    .prompt-input-wrap {
+      position: relative;
+      z-index: 1;
+      flex: 1;
+      min-width: 0;
+    }
+    #prompt-input {
+      flex: 1;
+      width: 100%;
+      min-height: 16px;
+      max-height: 80px;
+      resize: none;
+      background: transparent;
+      color: var(--text);
+      border: none;
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+      font-size: 11px;
+      font-family: inherit;
+      line-height: 1.55;
+      padding: 2px 0;
+    }
+    #prompt-input::placeholder { color: var(--text-muted); opacity: 0.75; }
+    #send-btn {
+      width: 26px;
+      height: 26px;
+      flex-shrink: 0;
+      border-radius: 4px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(200, 169, 110, 0.45);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    #send-btn:hover {
+      background: rgba(200, 169, 110, 0.25);
+      border-color: var(--accent);
+    }
+    #send-btn:disabled { opacity: 0.4; cursor: default; }
+    #send-btn svg {
+      width: 12px;
+      height: 12px;
+    }
+    #send-btn svg path {
+      stroke: currentColor;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div id="setup-view">
+      <div class="setup-inner">
+        <div class="setup-brand">ORYVN</div>
+        <p class="setup-copy">Sign in with your ORYVN account. Retouches use credits from your balance — no API key in the panel.</p>
+        <label class="setup-label" for="setup-email">Email</label>
+        <div class="uxp-field-wrap">
+          <input
+            id="setup-email"
+            type="email"
+            autocomplete="username"
+            spellcheck="false"
+            placeholder="you@studio.com"
+            uxp-quiet="false"
+            htmluxp-quiet="false"
+          />
+        </div>
+        <label class="setup-label" for="setup-password">Password</label>
+        <div class="uxp-field-wrap">
+          <input
+            id="setup-password"
+            type="password"
+            autocomplete="current-password"
+            spellcheck="false"
+            placeholder="••••••••"
+            uxp-quiet="false"
+            htmluxp-quiet="false"
+          />
+        </div>
+        <div id="setup-error"></div>
+        <div class="setup-actions">
+          <button type="button" id="sign-in-btn">Sign In</button>
+          <button type="button" id="register-btn">Create Account</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="main-view" class="hidden">
+      <header class="header-bar">
+        <span class="header-brand">ORYVN</span>
+        <div class="header-right">
+          <div class="header-credits-wrap">
+            <span id="header-credits-num">0</span>
+          </div>
+          <span id="header-filename">—</span>
+          <button type="button" id="menu-btn" title="Menu" aria-label="Menu">⋯</button>
+        </div>
+        <div id="header-menu-dropdown" class="hidden">
+          <button type="button" id="menu-buy-btn">Buy credits</button>
+          <button type="button" id="menu-signout-btn">Sign out</button>
+        </div>
+      </header>
+      <div id="chat-area"></div>
+      <div class="input-area">
+        <div class="input-shell">
+          <div class="prompt-input-wrap">
+            <textarea
+              id="prompt-input"
+              rows="1"
+              spellcheck="false"
+              placeholder="Ask ORYVN…"
+              uxp-quiet="false"
+              htmluxp-quiet="false"
+            ></textarea>
+          </div>
+          <button type="button" id="send-btn" title="Send" aria-label="Send">
+            <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M8 12V4M8 4L4.5 7.5M8 4l3.5 3.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="index.js"></script>
+</body>
+</html>
