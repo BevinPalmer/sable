@@ -1,5 +1,8 @@
 .DS_Store
 node_modules
+
+# Local clone of https://github.com/BevinPalmer/oryvn-backend — keep out of this repo
+sable-backend/
 .next
 out
 dist
